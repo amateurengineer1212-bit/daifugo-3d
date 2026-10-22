@@ -1,0 +1,9 @@
+# Render（無料の Web Service）の設計図。Dockerfile で動かす。PORT は Render が環境変数で渡す（app.py が読む）
+services:
+  - type: web
+    name: daifugo-3d
+    runtime: docker
+    plan: free
+    region: singapore
+    healthCheckPath: /api/health
+    autoDeploy: true
