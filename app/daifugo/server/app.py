@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from daifugo.rules import RuleSettings
 from daifugo.server.rooms import create, get, join, start, cleanup, set_settings, set_seat, _ROOMS, _LOCK, _build_state, process_cpu_turn
 from daifugo.server.rooms import join_or_reconnect, seat_by_token, lan_ips, public_info, touch
-from daifugo.server.rooms import set_rules, enforce_timeout, _maybe_settle, _run_cpu   # 【Claude 2026-10-22 追加要件】ルール・持ち時間・得点  # 【Claude 2026-10-22】同じ Wi-Fi の参加
+from daifugo.server.rooms import set_rules, enforce_timeout, _maybe_settle, _run_cpu, leave   # 【Claude 2026-10-22 追加要件】ルール・持ち時間・得点  # 【Claude 2026-10-22】同じ Wi-Fi の参加
 
 # 静的ファイルのルート
 STATIC_ROOT = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "static")
@@ -63,6 +63,11 @@ class RequestHandler(BaseHTTPRequestHandler):
     def _send_json(self, data, status=200):
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
+        # 【Claude 2026-10-22】iPhone の Safari が同じ URL の GET（/state の 1 秒ごとの読み）を端末の控えから返して、
+        #   参加者が待合のまま止まる（実機で発生）。通信の返事は一切控えに残させない
+        self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+        self.send_header("Pragma", "no-cache")
+        self.send_header("Expires", "0")
         self.end_headers()
         self.wfile.write(json.dumps(data, ensure_ascii=False).encode("utf-8"))
 
@@ -311,6 +316,16 @@ class RequestHandler(BaseHTTPRequestHandler):
             })
             return
 
+        # 【Claude 2026-10-22 実機の要望】退出（POST /api/room/{code}/leave {token}）：席は CPU に戻る。ホストなら次の人間へ引き継ぐ。人間が 0 なら部屋を消す
+        if path.startswith("/api/room/") and path.endswith("/leave"):
+            parts = path.split("/")
+            if len(parts) != 5:
+                self._send_json({"ok": False, "reason": "Invalid path"})
+                return
+            ok, reason = leave(parts[3], body.get("token"))
+            self._send_json({"ok": ok, "reason": reason})
+            return
+
         # 【Claude 2026-10-22 追加要件 7】ルール設定（設計書 02：POST /api/room/{code}/settings {token, settings, seat_count}。ホストだけ・開始前）
         if path.startswith("/api/room/") and path.endswith("/settings"):
             parts = path.split("/")
@@ -355,9 +370,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                 self._send_json({"ok": False, "reason": "Room not found"})
                 return
             
-            # トークン検証：ホスト席のトークン
-            host_seat = room_obj.seats[0] if room_obj.seats else None
-            if not host_seat or host_seat.token != token:
+            # トークン検証：ホストのトークン（【Claude 2026-10-22】退出で引き継がれるので席 0 ではなく room.host_token で見る）
+            if room_obj.host_token != token:
                 self._send_json({"ok": False, "reason": "Invalid token"})
                 return
             

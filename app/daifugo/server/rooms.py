@@ -127,20 +127,35 @@ def join_or_reconnect(code: str, name: str, avatar: str, token: Optional[str] = 
                     seat.last_seen = time.time()
                     room.last_active = time.time()
                     return seat, ""
-        if room.game is not None:
-            return None, "対戦中です（開始前にだけ参加できます）"
         target = None
-        for seat in room.seats:
-            if seat.kind == "empty":
-                target = seat
-                break
-        if target is None:
+        if room.game is not None:
+            # 【Claude 2026-10-22 実機の要望】途中参加：まだ上がっていない CPU の席を引き継ぐ（その席の手札をそのまま持つ）
+            g = room.game
+            if _phase_of(room) in ("round_end", "game_end"):
+                for seat in room.seats:
+                    if seat.kind == "cpu" and seat.index != 0:
+                        target = seat
+                        break
+            else:
+                finished = set(getattr(g, "finished", []) or [])
+                for seat in room.seats:
+                    if seat.kind == "cpu" and seat.index != 0 and seat.index not in finished:
+                        target = seat
+                        break
+            if target is None:
+                return None, "満席です（引き継げる CPU の席がありません）"
+        else:
             for seat in room.seats:
-                if seat.kind == "cpu" and seat.index != 0:
+                if seat.kind == "empty":
                     target = seat
                     break
-        if target is None:
-            return None, "満席です"
+            if target is None:
+                for seat in room.seats:
+                    if seat.kind == "cpu" and seat.index != 0:
+                        target = seat
+                        break
+            if target is None:
+                return None, "満席です"
         target.kind = "human"
         target.name = (name or "Player").strip()[:20] or "Player"
         target.avatar = avatar or ""
@@ -150,6 +165,46 @@ def join_or_reconnect(code: str, name: str, avatar: str, token: Optional[str] = 
         target.level = "normal"
         room.last_active = time.time()
         return target, ""
+
+
+def host_index(room: Room) -> int:
+    """ホスト（開始・もう一度・ルール変更ができる人）の席。退出で引き継がれることがある。"""
+    for seat in room.seats:
+        if seat.kind == "human" and seat.token == room.host_token:
+            return seat.index
+    return 0
+
+
+def leave(code: str, token: Optional[str]):
+    """【Claude 2026-10-22 実機の要望】退出：席を CPU に戻す（手札はそのまま CPU が続ける）。ホストが抜けたら次の人間へ引き継ぐ。
+    人間が 0 人になったら部屋を消す。戻り値 (ok, 理由)。"""
+    with _LOCK:
+        room = _ROOMS.get(code)
+    if not room:
+        return False, "部屋がありません"
+    with room.lock:
+        seat = seat_by_token(room, token)
+        if seat is None:
+            return False, "その席がありません"
+        seat.kind = "cpu"
+        seat.name = f"CPU{seat.index}"
+        seat.token = None
+        seat.connected = False
+        seat.level = room.settings.cpu_level
+        humans = [s for s in room.seats if s.kind == "human"]
+        if not humans:
+            with _LOCK:
+                _ROOMS.pop(code, None)
+            return True, "部屋を閉じました"
+        if room.host_token == token:
+            room.host_token = humans[0].token
+        room.last_active = time.time()
+        try:
+            _run_cpu(room)
+            _maybe_settle(room)
+        except Exception:
+            pass
+        return True, ""
 
 
 def seat_by_token(room: Room, token: Optional[str]) -> Optional[Seat]:
@@ -206,7 +261,7 @@ def public_info(room: Room) -> Dict[str, Any]:
             "seat_count": room.seat_count,
             "phase": _phase_of(room),
             "seats": [{"index": s.index, "name": s.name, "kind": s.kind, "connected": _connected(s)} for s in room.seats],
-            "host": 0,
+            "host": host_index(room),
             "settings": room.settings.to_dict(),
             "round": room.round_no,
         }
@@ -536,7 +591,7 @@ def _build_state(room: Room, token: Optional[str] = None) -> Dict[str, Any]:
         "code": room.code,
         "me": me_index,
         "seat_count": room.seat_count,
-        "host": 0,
+        "host": host_index(room),
         "round": room.round_no,
         "rounds": int(getattr(room.settings, "rounds", 3) or 1),
         "settings": room.settings.to_dict(),
