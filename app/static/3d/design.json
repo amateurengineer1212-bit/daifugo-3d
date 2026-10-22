@@ -1,0 +1,233 @@
+{
+  "colors": {
+    "felt": "#4caf50",
+    "felt_center": "#aed581",
+    "felt_edge": "#266b2d",
+    "rim_wood": "#a0522d",
+    "rim_wood_light": "#d2b48c",
+    "leather": "#321f12",
+    "gold": "#ffeb3b",
+    "page_bg_top": "#3a9d43",
+    "page_bg_bottom": "#1e5a26",
+    "card_face": "#ffffff",
+    "card_red": "#d32f2f",
+    "card_black": "#1a1a1a",
+    "card_back_main": "#1a4a8a",
+    "card_back_accent": "#f1c40f",
+    "seat_wood": "#7d5233",
+    "seat_gold": "#f1c40f",
+    "seat_text": "#ffffff",
+    "seat_turn_glow": "#fff200",
+    "log_band": "rgba(0, 40, 0, 0.75)",
+    "log_text": "#ffffff",
+    "button_play": [
+      "#ffb300",
+      "#e65100"
+    ],
+    "button_pass": [
+      "#ffb300",
+      "#e65100"
+    ],
+    "button_disabled": "#757575",
+    "button_text": "#ffffff",
+    "button_border": "#ffe082",
+    "panel_bg": "rgba(20, 60, 30, 0.9)",
+    "panel_border": "#f1c40f",
+    "input_bg": "#ffffff",
+    "input_text": "#333333"
+  },
+  "lights": {
+    "ambient": 0.7,
+    "hemisphere": {
+      "sky": "#e0ffe0",
+      "ground": "#2a5a2a",
+      "intensity": 0.8
+    },
+    "key": {
+      "intensity": 2.2,
+      "position": [
+        5,
+        15,
+        5
+      ]
+    },
+    "fill": {
+      "intensity": 0.7,
+      "position": [
+        -5,
+        8,
+        -5
+      ]
+    },
+    "spot_center": {
+      "intensity": 3.5,
+      "angle_deg": 45,
+      "penumbra": 0.5,
+      "position": [
+        0,
+        15,
+        0
+      ]
+    }
+  },
+  "camera": {
+    "pc": {
+      "fov": 45,
+      "position": [
+        0,
+        12,
+        10
+      ],
+      "look_at": [
+        0,
+        0,
+        -0.5
+      ]
+    },
+    "mobile": {
+      "fov": 55,
+      "position": [
+        0,
+        14,
+        8
+      ],
+      "look_at": [
+        0,
+        0,
+        -1.0
+      ]
+    }
+  },
+  "table": {
+    "radius": 8.0,
+    "felt_repeat": 2,
+    "felt_roughness": 0.8,
+    "top_y": 0.5,
+    "rim": {
+      "tube": 0.6,
+      "roughness": 0.3,
+      "metalness": 0.1
+    },
+    "leather_band": {
+      "tube": 0.25,
+      "roughness": 0.8
+    },
+    "gold_trim": {
+      "tube": 0.06,
+      "metalness": 1.0,
+      "roughness": 0.1
+    }
+  },
+  "card": {
+    "width": 1.2,
+    "height": 1.68,
+    "thickness": 0.05,
+    "corner_rank_ratio": 0.32,
+    "corner_suit_ratio": 0.25,
+    "roughness": 0.5
+  },
+  "hand": {
+    "pc": {
+      "distance": 5.5,
+      "width_ratio": 0.7,
+      "y_offset": -2.0,
+      "spread_deg": 22,
+      "tilt_deg": 15,
+      "lift_arc": 0.3,
+      "select_lift": 0.6
+    },
+    "mobile": {
+      "distance": 4.5,
+      "width_ratio": 0.9,
+      "y_offset": -2.0,
+      "spread_deg": 28,
+      "tilt_deg": 18,
+      "lift_arc": 0.4,
+      "select_lift": 0.5
+    }
+  },
+  "field": {
+    "scale_pc": 1.4,
+    "scale_mobile": 1.2,
+    "spread": 0.6,
+    "jitter_deg": 8,
+    "lift_y": 0.08,
+    "center": [
+      0,
+      0,
+      -1.0
+    ]
+  },
+  "opponents": {
+    "backs_scale": 0.6,
+    "backs_radius": 6.5,
+    "positions_pct": {
+      "3": [
+        [
+          15,
+          20
+        ],
+        [
+          50,
+          0
+        ],
+        [
+          85,
+          20
+        ]
+      ],
+      "4": [
+        [
+          10,
+          40
+        ],
+        [
+          35,
+          10
+        ],
+        [
+          65,
+          10
+        ],
+        [
+          90,
+          40
+        ]
+      ],
+      "5": [
+        [
+          5,
+          60
+        ],
+        [
+          25,
+          20
+        ],
+        [
+          50,
+          0
+        ],
+        [
+          75,
+          20
+        ],
+        [
+          95,
+          60
+        ]
+      ]
+    }
+  },
+  "animation": {
+    "deal_ms": 350,
+    "deal_stagger_ms": 50,
+    "play_ms": 450,
+    "select_ms": 200,
+    "cpu_play_ms": 600,
+    "flow_ms": 500,
+    "easing": "Cubic.Out"
+  },
+  "_meta": {
+    "gemma4_見直し": "2026-10-22 07:14 の提案 8 個を当てた（証拠/最終依頼/gemma4_デザイン/見直し_1022_0714.md）"
+  }
+}

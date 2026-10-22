@@ -1,0 +1,303 @@
+/* gemma4:31b が参考画像を見て作った style.css（2026-10-21 23:45〜23:50・証拠/最終依頼/gemma4_デザイン/gemma4の出力.md）。本文は gemma4 の出力のまま。足りない所は layout.css（Claude）で補う */
+/* style.css */
+:root {
+    --gold: #f1c40f;
+    --dark-green: #1e5a26;
+    --bright-green: #3a9d43;
+    --orange-btn: linear-gradient(to bottom, #ffb300, #e65100);
+    --orange-btn-disabled: #757575;
+    --text-white: #ffffff;
+    --text-brown: #3d2b1f;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+    background-color: var(--dark-green);
+    color: var(--text-white);
+    overflow: hidden;
+    user-select: none;
+}
+
+/* Common Panel Style */
+.lobby-box, .wait-box, .result-box {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 85%;
+    max-width: 400px;
+    background: rgba(20, 60, 30, 0.95);
+    border: 4px solid var(--gold);
+    border-radius: 20px;
+    padding: 30px;
+    box-sizing: border-box;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+h1, h2 {
+    color: var(--gold);
+    text-shadow: 2px 2px 0px var(--text-brown);
+    margin-top: 0;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 15px 0;
+    border-radius: 8px;
+    border: 2px solid var(--gold);
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+/* Lobby / Wait / Result Buttons */
+#join-btn, #start-btn, #again-btn, .count-btn {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 12px;
+    border: 2px solid var(--gold);
+    background: var(--orange-btn);
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #b34700;
+}
+
+#join-btn:active, #start-btn:active, #again-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #b34700;
+}
+
+.count-select {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    margin: 15px 0;
+}
+
+.count-btn {
+    width: auto;
+    padding: 8px 15px;
+    font-size: 14px;
+    background: #444;
+    box-shadow: 0 3px 0 #222;
+}
+
+.count-btn.active {
+    background: var(--orange-btn);
+    border-color: var(--gold);
+}
+
+/* Wait Screen Members */
+#members {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+    text-align: left;
+}
+
+.member {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid rgba(241, 196, 15, 0.3);
+}
+
+.member.me {
+    color: var(--gold);
+    font-weight: bold;
+}
+
+/* Game Screen HUD */
+#game-screen {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+#canvas-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+#ui-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    pointer-events: none;
+}
+
+#ui-overlay * {
+    pointer-events: auto;
+}
+
+/* Log Band */
+#log {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(0, 40, 0, 0.75);
+    color: white;
+    text-align: center;
+    padding: 8px 0;
+    font-size: 14px;
+    border-bottom: 2px solid var(--gold);
+    box-sizing: border-box;
+}
+
+/* Opponent Seats */
+.seat-frame {
+    position: absolute;
+    width: 80px;
+    height: 100px;
+    background: var(--text-brown);
+    border: 3px solid var(--gold);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+    transition: transform 0.2s;
+}
+
+.seat-frame.turn {
+    box-shadow: 0 0 15px var(--gold);
+    border-color: #fff;
+}
+
+.seat-avatar {
+    width: 40px;
+    height: 40px;
+    background: #333;
+    border-radius: 50%;
+    border: 2px solid var(--gold);
+    margin-bottom: 5px;
+}
+
+.seat-name {
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+
+.seat-count {
+    font-size: 11px;
+    color: #ddd;
+}
+
+.seat-turn {
+    font-size: 10px;
+    background: var(--gold);
+    color: var(--text-brown);
+    padding: 2px 5px;
+    border-radius: 4px;
+    margin-top: 4px;
+    font-weight: bold;
+}
+
+/* Status Bar */
+#status-bar {
+    position: absolute;
+    bottom: 100px;
+    left: 20px;
+    background: rgba(0,0,0,0.6);
+    padding: 8px 15px;
+    border-radius: 20px;
+    border-left: 4px solid var(--gold);
+    font-size: 14px;
+}
+
+#hint {
+    position: absolute;
+    bottom: 85px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 13px;
+    color: #eee;
+    text-shadow: 1px 1px 2px black;
+}
+
+/* Controls */
+#controls {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 20px;
+}
+
+#play-btn, #pass-btn {
+    width: 100px;
+    height: 55px;
+    border-radius: 15px;
+    border: 2px solid var(--gold);
+    background: var(--orange-btn);
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 0 5px 0 #b34700;
+    transition: filter 0.2s;
+}
+
+#play-btn:active, #pass-btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 2px 0 #b34700;
+}
+
+#play-btn:disabled, #pass-btn:disabled {
+    background: var(--orange-btn-disabled);
+    box-shadow: 0 5px 0 #444;
+    filter: grayscale(1);
+    cursor: not-allowed;
+}
+
+/* Result Screen */
+#ranks {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+    font-size: 20px;
+}
+
+.rank-1 { color: var(--gold); font-weight: bold; font-size: 24px; }
+
+/* PC Layout Adjustments */
+@media (min-width: 900px) {
+    .lobby-box, .wait-box, .result-box {
+        max-width: 600px;
+        padding: 50px;
+    }
+    
+    .count-select {
+        justify-content: flex-start;
+        gap: 30px;
+    }
+
+    #controls {
+        bottom: 40px;
+    }
+
+    #play-btn, #pass-btn {
+        width: 140px;
+        height: 70px;
+        font-size: 22px;
+    }
+}

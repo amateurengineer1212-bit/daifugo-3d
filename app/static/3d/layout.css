@@ -1,0 +1,190 @@
+/* layout.css（Claude・2026-10-22 会長の最終依頼）
+   style.css（gemma4 の飾り）に無い「動かすための補い」だけ：画面の切り替え・非表示の部品・待合の URL 行・
+   相手の席の置き場・吹き出し・安全域（ノッチ）・タッチの扱い。色や飾りは style.css に任せる。 */
+
+html, body { height: 100%; }
+body { -webkit-tap-highlight-color: transparent; }
+
+/* 画面の切り替え（JS が .active を付ける） */
+#name-screen, #wait-screen, #game-screen, #result-screen { display: none; }
+#name-screen.active, #wait-screen.active, #game-screen.active { display: block; }
+#result-screen.active { display: block; }
+#name-screen, #wait-screen, #result-screen {
+  position: fixed; inset: 0; z-index: 20;
+  background: radial-gradient(ellipse at 50% 35%, #76c861 0%, #3a9d43 45%, #1e5a26 100%);
+}
+#result-screen { background: rgba(0, 30, 10, 0.55); z-index: 30; }
+#game-screen { position: fixed; inset: 0; }
+#canvas-container canvas { display: block; touch-action: none; }
+
+/* 非表示だが id は残す（2D 版の確かめ用） */
+#legal-info, #selected, #shown-hand, #hand-2d { display: none; }
+
+/* ロビー */
+#join-info:empty, #resume-line:empty { display: none; }
+#join-info { color: #ffe082; font-weight: bold; margin: 0 0 6px; }
+#resume-line a { color: #ffe082; }
+.lobby-note { font-size: 12px; opacity: 0.85; margin: 8px 0 0; }
+#count-select.hidden { display: none; }
+.count-btn { min-height: 44px; }
+
+/* 待合 */
+.room-line { font-size: 18px; margin: 6px 0; }
+.room-line b { font-size: 28px; letter-spacing: 3px; color: #f1c40f; }
+.url-line { display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap; margin: 6px 0 4px; }
+#join-url { font-size: 14px; word-break: break-all; background: rgba(255,255,255,0.12); padding: 6px 10px; border-radius: 8px; user-select: all; }
+#copy-url { min-height: 44px; padding: 6px 14px; border-radius: 8px; border: 2px solid #f1c40f; background: #2f7d35; color: #fff; font-weight: bold; }
+.member-kind { font-size: 12px; opacity: 0.85; }
+.member.cpu .member-name { opacity: 0.8; }
+#start-btn.hidden { display: none; }
+#wait-note { font-size: 13px; margin: 4px 0 0; }
+
+/* 対戦の HUD */
+#log:empty { display: none; }
+#log { padding-top: calc(8px + env(safe-area-inset-top)); line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#seats { position: absolute; left: 0; right: 0; top: calc(44px + env(safe-area-inset-top)); height: 220px; pointer-events: none; }
+#seats .seat-frame { transform: translateX(-50%); pointer-events: none; }
+.seat-frame.done { opacity: 0.75; }
+.seat-frame .seat-turn { display: none; }
+.seat-frame.turn .seat-turn { display: block; }
+.seat-frame .seat-rank { display: none; font-size: 11px; color: #f1c40f; font-weight: bold; }
+.seat-frame.done .seat-rank { display: block; }
+.seat-frame.me-turn { }
+.seat-avatar { position: relative; overflow: hidden; }
+.seat-avatar::before { content: ""; position: absolute; left: 50%; top: 22%; width: 38%; height: 38%; border-radius: 50%; background: #f5deb3; transform: translateX(-50%); }
+.seat-avatar::after { content: ""; position: absolute; left: 50%; top: 62%; width: 70%; height: 60%; border-radius: 50% 50% 0 0; background: #f5deb3; transform: translateX(-50%); }
+.seat-frame.cpu .seat-avatar::before, .seat-frame.cpu .seat-avatar::after { background: #cfd8dc; }
+.seat-frame.offline .seat-name::after { content: "（切断）"; font-size: 10px; }
+
+#status-bar span { margin-right: 10px; }
+#status-bar span:last-child { margin-right: 0; }
+#status-bar.my-turn { border-left-color: #fff200; box-shadow: 0 0 12px #fff200; }
+#controls { padding-bottom: env(safe-area-inset-bottom); }
+#play-btn, #pass-btn { min-width: 100px; min-height: 48px; }
+#hint:empty { display: none; }
+
+/* 吹き出し（パス・上がり など） */
+#bubbles { position: absolute; inset: 0; pointer-events: none; }
+#bubbles .bubble { pointer-events: none; }
+#seats .seat-frame * { pointer-events: none; }
+.bubble { position: absolute; transform: translate(-50%, -100%); background: #fff; color: #3d2b1f; font-weight: bold; padding: 6px 12px; border-radius: 14px; border: 2px solid #f1c40f; box-shadow: 0 3px 8px rgba(0,0,0,0.35); font-size: 14px; white-space: nowrap; animation: bubble-pop 1.6s ease-out forwards; }
+@keyframes bubble-pop { 0% { opacity: 0; transform: translate(-50%, -80%) scale(0.8); } 15% { opacity: 1; transform: translate(-50%, -100%) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -130%); } }
+
+/* 結果 */
+#ranks li { padding: 4px 0; }
+#again-btn.hidden { display: none; }
+#again-note { font-size: 13px; }
+
+/* スマホ縦の細かい調整（360〜430） */
+@media (max-width: 480px) {
+  .lobby-box, .wait-box, .result-box { padding: 22px 18px; }
+  #seats { height: 200px; }
+  .seat-frame { width: 72px; height: 94px; }
+  #status-bar { bottom: 336px; top: auto; left: 8px; font-size: 13px; padding: 6px 10px; }
+  #hint { bottom: 300px; font-size: 13px; background: rgba(0,40,0,0.55); padding: 4px 10px; border-radius: 10px; white-space: nowrap; }
+  #controls { bottom: calc(12px + env(safe-area-inset-bottom)); gap: 14px; }
+}
+@media (max-width: 380px) {
+  .seat-frame { width: 66px; height: 90px; }
+  .seat-name { font-size: 11px; }
+}
+/* PC：卓と手札を主役に（gemma4 の @media (min-width: 900px) を補う） */
+@media (min-width: 900px) {
+  #seats { top: calc(50px + env(safe-area-inset-top)); height: 260px; }
+  .seat-frame { width: 110px; height: 130px; }
+  .seat-avatar { width: 56px; height: 56px; }
+  .seat-name { font-size: 14px; }
+  .seat-count { font-size: 13px; }
+  #status-bar { bottom: auto; top: 300px; left: 24px; font-size: 15px; }
+  #hint { bottom: 250px; font-size: 14px; background: rgba(0,40,0,0.5); padding: 4px 12px; border-radius: 10px; }
+  #controls { left: auto; right: 36px; bottom: 170px; transform: none; }
+}
+
+/* 音の設定（sound.js が body に付ける） */
+#sound-btn { position: fixed; right: 10px; top: calc(6px + env(safe-area-inset-top)); z-index: 40; width: 40px; height: 40px; border-radius: 50%; border: 2px solid #f1c40f; background: rgba(20,60,30,0.85); color: #fff; font-size: 20px; line-height: 1; cursor: pointer; }
+#sound-btn.muted { opacity: 0.6; text-decoration: line-through; }
+#sound-panel { position: fixed; right: 10px; top: calc(52px + env(safe-area-inset-top)); z-index: 40; display: none; background: rgba(20,60,30,0.95); border: 2px solid #f1c40f; border-radius: 12px; padding: 10px 12px; color: #fff; font-size: 13px; width: 250px; box-shadow: 0 6px 16px rgba(0,0,0,0.4); }
+#sound-panel.open { display: block; }
+#sound-panel .sp-row { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+#sound-panel label { display: flex; align-items: center; gap: 6px; flex: 1; }
+#sound-panel input[type=range] { flex: 1; margin: 0; }
+#sound-panel select { flex: 1; font-size: 12px; max-width: 200px; }
+#sound-panel .sp-mute { min-height: 32px; padding: 2px 8px; border-radius: 8px; border: 1px solid #f1c40f; background: transparent; color: #fff; font-size: 11px; white-space: nowrap; }
+#sound-panel .sp-mute.on { background: #f1c40f; color: #3d2b1f; }
+#sound-panel .sp-note { font-size: 11px; opacity: 0.8; margin-top: 4px; }
+#log.revolution { background: rgba(120, 20, 20, 0.8); }
+#join-url-alt { font-size: 11px; opacity: 0.8; word-break: break-all; margin: 2px 0 6px; }
+#join-url-alt:empty { display: none; }
+
+/* 手札の当たり判定（透明。札の左上だけ） */
+#hand-targets { position: absolute; inset: 0; pointer-events: none; }
+#hand-targets .hand-target { position: absolute; pointer-events: auto; background: transparent; border: 0; padding: 0; margin: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+#hand-targets .hand-target:disabled { cursor: default; }
+#hand-targets .hand-target:focus-visible { outline: 3px solid #fff200; outline-offset: -3px; border-radius: 6px; }
+#status-bar.revolution::after { content: '革命中'; margin-left: 8px; background: #c62828; color: #fff; padding: 1px 6px; border-radius: 8px; font-size: 11px; }
+
+/* ---- 追加要件（2026-10-22）：なぞり選択・ルール設定・待ちのモード・お知らせ（Claude） ---- */
+#hand-targets .hand-target { touch-action: none; }
+#hand-targets .hand-target.unselectable { cursor: default; }
+#round-line { position: absolute; left: 50%; transform: translateX(-50%); top: calc(44px + env(safe-area-inset-top)); font-size: 12px; color: #ffe082; text-shadow: 1px 1px 2px #000; pointer-events: none; white-space: nowrap; }
+#round-line:empty { display: none; }
+#mode-bar:empty { display: none; }
+#rank-picker { display: none; position: absolute; left: 50%; transform: translateX(-50%); bottom: 150px; width: min(92vw, 420px); flex-wrap: wrap; gap: 6px; justify-content: center; background: rgba(0,30,10,0.85); border: 2px solid #f1c40f; border-radius: 14px; padding: 8px; z-index: 12; }
+#rank-picker.open { display: flex; }
+#rank-picker .rank-btn { min-width: 44px; min-height: 40px; border-radius: 8px; border: 2px solid #f1c40f; background: #2f7d35; color: #fff; font-weight: bold; font-size: 15px; }
+#rank-picker .rank-btn.on { background: #f1c40f; color: #3d2b1f; }
+#toast { position: fixed; left: 50%; bottom: calc(110px + env(safe-area-inset-bottom)); transform: translateX(-50%) translateY(10px); background: rgba(0,0,0,0.85); color: #fff; padding: 10px 16px; border-radius: 12px; border: 2px solid #f1c40f; font-size: 14px; max-width: 90vw; opacity: 0; pointer-events: none; transition: opacity 0.18s, transform 0.18s; z-index: 60; text-align: center; }
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+#game-rules-btn { position: fixed; right: 58px; top: calc(6px + env(safe-area-inset-top)); z-index: 40; height: 40px; padding: 0 12px; border-radius: 20px; border: 2px solid #f1c40f; background: rgba(20,60,30,0.85); color: #fff; font-size: 13px; font-weight: bold; cursor: pointer; }
+.sub-btn { display: inline-block; min-height: 44px; padding: 8px 14px; margin: 6px 4px; border-radius: 10px; border: 2px solid #f1c40f; background: rgba(255,255,255,0.1); color: #fff; font-weight: bold; font-size: 14px; cursor: pointer; }
+.sub-btn.hidden, #rules-btn.hidden { display: none; }
+#wait-rules-line { font-size: 12px; opacity: 0.9; margin: 4px 0 6px; line-height: 1.4; }
+.count-btn.active { outline: 3px solid #fff200; }
+/* ルール画面：18 項目のタイル */
+#rules-screen { display: none; position: fixed; inset: 0; z-index: 50; background: rgba(0, 20, 8, 0.75); overflow: auto; -webkit-overflow-scrolling: touch; }
+#rules-screen.active { display: block; }
+.rules-box { position: relative; margin: 12px auto; width: min(96vw, 720px); background: rgba(20, 60, 30, 0.97); border: 4px solid #f1c40f; border-radius: 20px; padding: 16px; box-sizing: border-box; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.rules-box h2 { margin-bottom: 4px; }
+#rules-note { font-size: 12px; opacity: 0.9; margin: 0 0 10px; }
+#rules-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+@media (min-width: 600px) { #rules-grid { grid-template-columns: repeat(6, 1fr); } }
+.rule-tile { min-height: 58px; padding: 6px 4px; border-radius: 10px; border: 2px solid rgba(241,196,15,0.6); background: rgba(255,255,255,0.08); color: #fff; cursor: pointer; display: flex; flex-direction: column; justify-content: center; gap: 2px; }
+.rule-tile .rule-name { font-weight: bold; font-size: 12px; }
+.rule-tile .rule-value { font-size: 11px; color: #ffe082; word-break: break-all; }
+.rule-tile.open { background: rgba(241,196,15,0.25); border-color: #fff200; }
+.rule-tile.diff { border-color: #4fc3f7; box-shadow: 0 0 0 2px rgba(79,195,247,0.5) inset; }
+.rule-tile.diff .rule-value { color: #81d4fa; }
+.rule-tile.action { background: rgba(198,40,40,0.35); }
+#rules-detail:empty { display: none; }
+#rules-detail { margin-top: 10px; text-align: left; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 10px 12px; }
+#rules-detail .rd-head { font-weight: bold; color: #f1c40f; font-size: 15px; }
+#rules-detail .rd-desc { font-size: 13px; line-height: 1.5; margin: 4px 0 8px; }
+#rules-detail .rd-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 6px 0; }
+#rules-detail .rd-label { min-width: 96px; font-size: 13px; }
+#rules-detail .rd-opt { min-height: 36px; padding: 4px 12px; border-radius: 8px; border: 2px solid #f1c40f; background: transparent; color: #fff; font-weight: bold; cursor: pointer; }
+#rules-detail .rd-opt.on { background: #f1c40f; color: #3d2b1f; }
+#rules-detail .rd-opt:disabled { opacity: 0.5; cursor: default; }
+.rules-actions { margin-top: 8px; }
+#rules-match { font-size: 12px; color: #81d4fa; margin: 6px 0; }
+#rules-close { display: block; width: 100%; min-height: 48px; margin-top: 6px; border-radius: 12px; border: 2px solid #f1c40f; background: linear-gradient(to bottom, #ffb300, #e65100); color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; }
+/* 出す／パスの有効・無効は即時に切り替える（gemma4 の transition: filter 0.2s は、描画が 1〜2 fps の端末（SwiftShader・弱いスマホ）で
+   合成スレッドの変化が進まず、有効なのに灰色のまま見えた。2026-10-22 小部屋の Chromium で確認） */
+#play-btn, #pass-btn { transition: none; }
+/* スマホ：右上の「ルール」「♪」が実況の文字に重ならないように（文字の領域を右で区切り、ボタンを小さく） */
+@media (max-width: 700px) {
+  #log { padding-left: 8px; padding-right: 96px; text-align: left; font-size: 13px; }
+  #sound-btn { width: 34px; height: 34px; font-size: 17px; top: calc(5px + env(safe-area-inset-top)); right: 8px; }
+  #game-rules-btn { height: 34px; padding: 0 9px; font-size: 12px; right: 48px; top: calc(5px + env(safe-area-inset-top)); }
+}
+/* ラウンド表示は左上（中央の席の枠に重ならないように） */
+#round-line { left: 8px; transform: none; }
+/* 6 人（相手 5 人）のスマホ：枠を細くして、5 つが重ならないようにする（390px で 8/29/50/71/92% ＝ 82px 間隔 > 枠 60px） */
+@media (max-width: 700px) {
+  #seats.seats-5 .seat-frame { width: 60px; height: 84px; }
+  #seats.seats-5 .seat-avatar { width: 30px; height: 30px; }
+  #seats.seats-5 .seat-name { font-size: 10px; }
+  #seats.seats-5 .seat-count { font-size: 10px; }
+}
+@media (max-width: 380px) {
+  #seats.seats-5 .seat-frame { width: 56px; height: 80px; }
+}

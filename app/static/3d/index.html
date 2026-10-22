@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="大富豪">
+  <meta name="theme-color" content="#1e5a26">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <title>大富豪オンライン - 3D 対戦</title>
+  <!-- style.css：gemma4:31b が参考画像を見て作った飾り（色・枠・ボタン）。layout.css：画面の切り替えや非表示など、動かすための補い（Claude） -->
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="layout.css">
+</head>
+<body>
+  <!-- ロビー -->
+  <div id="name-screen">
+    <div class="lobby-box">
+      <h1>大富豪オンライン</h1>
+      <p id="join-info"></p>
+      <input type="text" id="name" placeholder="名前を入力" maxlength="20" autocomplete="off">
+      <div id="count-select" class="count-select">
+        <span class="count-label">人数</span>
+        <button type="button" class="count-btn active" data-count="4">4人</button>
+        <button type="button" class="count-btn" data-count="5">5人</button>
+        <button type="button" class="count-btn" data-count="6">6人</button>
+      </div>
+      <button type="button" id="rules-btn" class="sub-btn">ルールを決める</button>
+      <button type="button" id="join-btn">部屋を作る</button>
+      <p class="lobby-note">同じ Wi-Fi の友達は、待合に出る URL から参加できます</p>
+      <p id="resume-line"></p>
+    </div>
+  </div>
+
+  <!-- 待合 -->
+  <div id="wait-screen">
+    <div class="wait-box">
+      <h2>待合</h2>
+      <div class="room-line">部屋番号 <b id="room-code"></b></div>
+      <div class="url-line"><span id="join-url"></span><button type="button" id="copy-url">コピー</button></div>
+      <ul id="members"></ul>
+      <button type="button" id="wait-rules-btn" class="sub-btn">部屋のルールを見る</button>
+      <button type="button" id="start-btn">開始</button>
+      <p id="wait-note"></p>
+    </div>
+  </div>
+
+  <!-- 対戦 -->
+  <div id="game-screen">
+    <div id="canvas-container"></div>
+    <div id="ui-overlay">
+      <div id="log"></div>
+      <div id="seats"></div>
+      <div id="status-bar"><span id="player-name"></span><span id="hand-count">0枚</span><span id="client-status">待機中</span></div>
+      <div id="round-line"></div>
+      <div id="hint"></div>
+      <div id="mode-bar"></div>
+      <div id="rank-picker"></div>
+      <div id="controls">
+        <button type="button" id="play-btn" disabled>出す</button>
+        <button type="button" id="pass-btn" disabled>パス</button>
+      </div>
+      <button type="button" id="game-rules-btn" class="icon-btn" title="部屋のルール">ルール</button>
+      <div id="hand-targets" aria-label="自分の手札"></div>
+      <div id="bubbles"></div>
+      <div id="legal-info"></div>
+      <div id="selected"></div>
+      <div id="shown-hand"></div>
+      <div id="hand-2d"></div>
+    </div>
+  </div>
+
+  <!-- 結果 -->
+  <div id="result-screen">
+    <div class="result-box">
+      <h2 id="result-title">結果</h2>
+      <ol id="ranks"></ol>
+      <div id="score-line"></div>
+      <button type="button" id="again-btn">もう一度</button>
+      <p id="again-note"></p>
+    </div>
+  </div>
+
+  <!-- ルール設定（作る人）／ルールの閲覧（全員） -->
+  <div id="rules-screen">
+    <div class="rules-box">
+      <h2 id="rules-title">ルール</h2>
+      <p id="rules-note"></p>
+      <div id="rules-grid"></div>
+      <div id="rules-detail"></div>
+      <div class="rules-actions">
+        <button type="button" id="rules-save-mine" class="sub-btn">あなたのルールとして保存</button>
+        <button type="button" id="rules-load-mine" class="sub-btn">あなたのルールを読み込む</button>
+        <button type="button" id="rules-reset" class="sub-btn">初期化（既定に戻す）</button>
+      </div>
+      <p id="rules-match"></p>
+      <button type="button" id="rules-close">閉じる</button>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./lib/three.module.js"
+    }
+  }
+  </script>
+  <script src="lib/howler.core.min.js"></script>
+  <script type="module" src="main.js"></script>
+  <script>
+    // ホーム画面のアプリ（PWA）：https か localhost のときだけ service worker が入る（LAN の http では入らないが、遊ぶのには関係ない）
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js').then(function (r) { window.__swOk = true; r.update(); }).catch(function (e) { window.__swOk = false; window.__swErr = String(e); });
+      });
+    }
+  </script>
+</body>
+</html>

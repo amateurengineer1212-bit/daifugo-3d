@@ -1,0 +1,17 @@
+{
+  "name": "大富豪オンライン 3D",
+  "short_name": "大富豪",
+  "description": "明るいカジノの卓で遊ぶ 3D 大富豪。CPU と、同じ部屋の友達と対戦",
+  "start_url": "/3d/",
+  "scope": "/3d/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1e5a26",
+  "theme_color": "#1e5a26",
+  "lang": "ja",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
