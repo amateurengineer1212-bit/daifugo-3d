@@ -1,0 +1,363 @@
+/* 大富豪オンライン — カジノ風最小スタイル */
+/* 設計書 03: 見た目の方針に従う */
+
+:root {
+    --felt-primary: #0b3d2e;
+    --felt-center: #145a43;
+    --gold: #d4af37;
+    --gold-highlight: #f5e6a8;
+    --bg-dark: #07111a;
+    --card-white: #ffffff;
+    --card-red: #e60000;
+    --card-black: #000000;
+    --font-heading: Georgia, "Times New Roman", serif;
+    --font-body: -apple-system, "Hiragino Sans", sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-body);
+    background: radial-gradient(circle at center, var(--felt-center), var(--felt-primary));
+    color: var(--gold);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* 外側の背景（黒に近い紺） */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-dark);
+    z-index: -1;
+}
+
+h1, h2, h3 {
+    font-family: var(--font-heading);
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+h1 {
+    font-size: 2rem;
+    margin: 1rem 0;
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+}
+
+/* ロビー画面 */
+#login {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    gap: 1rem;
+}
+
+#login input {
+    padding: 0.8rem;
+    font-size: 1rem;
+    border: 2px solid var(--gold);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--bg-dark);
+    width: 280px;
+    text-align: center;
+}
+
+#login button {
+    padding: 0.8rem 2rem;
+    font-size: 1rem;
+    background: var(--gold);
+    color: var(--bg-dark);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+#login button:hover {
+    background: var(--gold-highlight);
+}
+
+/* 卓（楕円） */
+#table {
+    width: 90vw;
+    max-width: 980px;
+    aspect-ratio: 1.6 / 1;
+    margin: 2rem auto;
+    border-radius: 50%;
+    border: 4px double var(--gold);
+    position: relative;
+    background: transparent;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+#field {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 200px;
+    min-height: 120px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 1rem;
+}
+
+#seats {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+/* 席 */
+/* 【Claude 2026-10-19 P13】位置は app.js が楕円の周りに付ける。ここでは中心で合わせ、幅は中身に合わせる。
+   光る縁の余白と縁は、光らない席にも透明で持たせる（手番が動いても大きさが変わらず、隣と重ならない）。 */
+.seat {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+    text-align: center;
+    color: var(--gold);
+    font-size: 0.85rem;
+    line-height: 1.2;
+    pointer-events: auto;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    padding: 0.5rem;
+}
+
+.seat.active {
+    border: 2px solid var(--gold);
+    border-radius: 50%;
+    padding: 0.5rem;
+    box-shadow: 0 0 15px var(--gold);
+}
+
+.seat-name {
+    font-weight: bold;
+    margin-bottom: 0.3rem;
+}
+
+.seat-cards {
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+/* 札のスタイル（CSS だけで描く） */
+.card {
+    width: 50px;
+    height: 75px;
+    background: var(--card-white);
+    border-radius: 6px;
+    position: relative;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 4px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    user-select: none;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 10px rgba(212, 175, 55, 0.4);
+}
+
+.card.selected {
+    border: 2px solid var(--gold);
+    box-shadow: 0 0 12px var(--gold);
+}
+
+.card-suit-top {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    font-size: 0.65rem;
+}
+
+.card-suit-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.8rem;
+}
+
+.card-red {
+    color: var(--card-red);
+}
+
+.card-black {
+    color: var(--card-black);
+}
+
+/* 【Claude 2026-10-19】手札は卓の下に横並び（03 §2-3「下に横並び。重ねて扇状。横スクロール可」）。
+   これまでは #hand の決まりが無く、.card が display:flex なので 1 枚ずつ縦に積まれ、卓に重なっていた（P9）。 */
+#table {
+    margin-bottom: 120px;          /* 下に手札を置く場所 */
+}
+#field-label {
+    position: absolute;
+    top: calc(50% - 62px);         /* 【Claude 2026-10-19 P13】場の札のすぐ上（これまで -88px。卓の低い狭い画面で、上の席に掛かっていた） */
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--gold);
+    font-size: 0.8rem;
+}
+#hand-label {
+    position: absolute;
+    top: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--gold);
+    font-size: 0.8rem;
+}
+#hand {
+    position: absolute;
+    top: calc(100% + 18px);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    width: max-content;
+    max-width: 96vw;
+    overflow-x: auto;
+    padding: 14px 8px 6px;         /* 選んだ札が上がっても切れないように */
+    z-index: 2;
+}
+#hand .card {
+    flex: 0 0 auto;
+}
+#hand .card + .card {
+    margin-left: -14px;            /* 少し重ねる */
+}
+#hand .card.selected {
+    transform: translateY(-12px);
+}
+
+/* コントロール */
+#controls {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+
+#controls button {
+    padding: 0.8rem 2rem;
+    font-size: 1rem;
+    background: var(--gold);
+    color: var(--bg-dark);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    min-width: 100px;
+}
+
+#controls button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#controls button:hover:not(:disabled) {
+    background: var(--gold-highlight);
+}
+
+/* ログ */
+#log {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--gold-highlight);
+    max-height: 120px;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+}
+
+#log p {
+    margin: 0.2rem 0;
+}
+
+/* 結果画面 */
+#result {
+    text-align: center;
+    padding: 2rem;
+}
+
+#result h2 {
+    color: var(--gold);
+}
+
+#ranks {
+    list-style: none;
+    margin: 1rem 0;
+    font-size: 1.1rem;
+}
+
+#ranks li {
+    margin: 0.5rem 0;
+    color: var(--gold-highlight);
+}
+
+/* レスポンシブ */
+@media (max-width: 390px) {
+    #table {
+        width: 95vw;
+        aspect-ratio: 1.5 / 1;
+    }
+
+    .card {
+        width: 40px;
+        height: 60px;
+    }
+
+    .card-suit-center {
+        font-size: 1.4rem;
+    }
+
+    #login input {
+        width: 240px;
+    }
+}
+
+/* 【Claude 2026-10-19 P13】狭い画面（卓が低い）では、席の字と余白を小さくする（上の席・自分の席が「場」「手札」の文字に掛からないように） */
+@media (max-width: 480px) {
+    .seat, .seat.active {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.4rem;
+    }
+}
+
+/* 動きを減らす設定 */
+@media (prefers-reduced-motion: reduce) {
+    .card, button {
+        transition: none;
+    }
+}

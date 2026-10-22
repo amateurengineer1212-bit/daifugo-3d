@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>大富豪オンライン</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <h1>大富豪オンライン</h1>
+    
+    <!-- ロビー画面 -->
+    <div id="login">
+        <input type="text" id="name" placeholder="名前を入力">
+        <button id="join-btn">CPU と遊ぶ</button>
+    </div>
+
+    <!-- ゲーム画面 -->
+    <div id="game" style="display:none;">
+        <div id="table">
+            <!-- 場 -->
+            <div id="field-label">場</div>
+            <div id="field"></div>
+            
+            <!-- 席（他席の枚数含む） -->
+            <div id="seats"></div>
+            
+            <!-- 自分の手札 -->
+            <div id="hand-label">手札</div>
+            <div id="hand"></div>
+        </div>
+        
+        <!-- コントロール -->
+        <div id="controls">
+            <button id="play-btn">出す</button>
+            <button id="pass-btn">パス</button>
+        </div>
+        
+        <!-- ログ -->
+        <div id="log"></div>
+        
+    </div>
+
+    <!-- 結果表示（終わったら順位と「もう一度」）
+         【Claude 2026-10-19】#game の中にあると、showResult() が #game を隠したとき一緒に隠れて何も見えなかったので、外へ出した -->
+    <div id="result" style="display:none;">
+        <h2>順位</h2>
+        <ul id="ranks"></ul>
+        <button id="again-btn">もう一度</button>
+    </div>
+    
+    <script src="/app.js"></script>
+</body>
+</html>
