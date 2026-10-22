@@ -317,7 +317,7 @@ let threeReady = false;
 const raycaster = new THREE.Raycaster();
 const ndc = new THREE.Vector2();
 
-function isMobile() { return window.innerWidth < 700 || window.innerWidth / window.innerHeight < 0.95; }
+function isMobile() { const v = viewportSize(); return v.w < 700 || v.w / v.h < 0.95; }
 function col(hex) { return new THREE.Color(hex); }
 
 function makeEnvironment() {
@@ -488,7 +488,8 @@ function applyCamera() {
   profile = isMobile() ? 'mobile' : 'pc';
   const C = D.camera[profile];
   camera.fov = C.fov;
-  camera.aspect = window.innerWidth / window.innerHeight;
+  const vv0 = viewportSize();
+  camera.aspect = vv0.w / vv0.h;
   camera.position.set(...C.position);
   camera.lookAt(new THREE.Vector3(...C.look_at));
   camera.updateProjectionMatrix();
@@ -508,7 +509,8 @@ function init3D() {
   const container = $('canvas-container');
   renderer = new THREE.WebGLRenderer({ antialias: quality !== 'low', alpha: false, powerPreference: 'high-performance' });
   renderer.setPixelRatio(quality === 'low' ? 1 : Math.min(window.devicePixelRatio || 1, 2));
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  const vvInit = fitGameScreen();
+  renderer.setSize(vvInit.w, vvInit.h);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.shadowMap.enabled = quality !== 'low';
   renderer.shadowMap.type = THREE.PCFShadowMap;
@@ -536,12 +538,28 @@ function init3D() {
 
   attachInteraction();
   window.addEventListener('resize', onResize);
+  if (window.visualViewport) { window.visualViewport.addEventListener('resize', onResize); window.visualViewport.addEventListener('scroll', onResize); }
   threeReady = true;
   animate();
 }
+// 【実機の要望 2026-10-22】スマホのブラウザは、アドレスバーやツールバーの分だけ「見えている高さ」が innerHeight と違うことがある
+//   （出す／パスが画面の下に隠れた）。見えている範囲（visualViewport）に #game-screen を合わせ、描画もその大きさにする
+function viewportSize() {
+  const vv = window.visualViewport;
+  if (vv && vv.height > 0) return { w: Math.round(vv.width), h: Math.round(vv.height), top: Math.round(vv.offsetTop || 0), left: Math.round(vv.offsetLeft || 0) };
+  return { w: window.innerWidth, h: window.innerHeight, top: 0, left: 0 };
+}
+function fitGameScreen() {
+  const v = viewportSize();
+  const gs = $('game-screen');
+  gs.style.top = v.top + 'px'; gs.style.left = v.left + 'px'; gs.style.width = v.w + 'px'; gs.style.height = v.h + 'px'; gs.style.bottom = 'auto'; gs.style.right = 'auto';
+  document.documentElement.style.setProperty('--vvh', v.h + 'px');
+  return v;
+}
 function onResize() {
   if (!threeReady) return;
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  const v = fitGameScreen();
+  renderer.setSize(v.w, v.h);
   applyCamera();
   layoutHand(false);
   layoutField(false);
@@ -720,8 +738,9 @@ function updateHandTargets(force = false) {
     if (!b) return;
     const tl = c.hit.localToWorld(new THREE.Vector3(-D.card.width / 2, D.card.height / 2, 0)).project(camera);
     const br = c.hit.localToWorld(new THREE.Vector3(-D.card.width / 2 + D.card.width * 0.42, D.card.height / 2 - D.card.height * 0.5, 0)).project(camera);
-    const x1 = (tl.x + 1) / 2 * window.innerWidth, y1 = (1 - tl.y) / 2 * window.innerHeight;
-    const x2 = (br.x + 1) / 2 * window.innerWidth, y2 = (1 - br.y) / 2 * window.innerHeight;
+    const vw = renderer.domElement.clientWidth || window.innerWidth, vh = renderer.domElement.clientHeight || window.innerHeight;
+    const x1 = (tl.x + 1) / 2 * vw, y1 = (1 - tl.y) / 2 * vh;
+    const x2 = (br.x + 1) / 2 * vw, y2 = (1 - br.y) / 2 * vh;
     b.style.left = Math.min(x1, x2) + 'px'; b.style.top = Math.min(y1, y2) + 'px';
     b.style.width = Math.max(24, Math.abs(x2 - x1)) + 'px'; b.style.height = Math.max(24, Math.abs(y2 - y1)) + 'px';
     const sel = selectedIndices.includes(i);
@@ -1410,7 +1429,7 @@ function renderWait(state) {
   $('wait-rules-btn').textContent = host ? 'ルールを変える' : '部屋のルールを見る';
   const humans = state.seats.filter((s) => s.kind === 'human').length;
   $('wait-note').textContent = host
-    ? ('人間 ' + humans + ' 人・CPU ' + (state.seats.length - humans) + ' 人。友達が入ったら「開始」を押してください')
+    ? ('人間 ' + humans + ' 人・CPU ' + (state.seats.length - humans) + ' 人。友達が入ったら「開始」を押してください（開始後でも、同じ URL から CPU の席に入れます）')
     : 'ホストが開始するのを待っています（人間 ' + humans + ' 人）';
 }
 function setupLobby() {
@@ -1511,6 +1530,27 @@ function setupLobby() {
   });
   $('play-btn').addEventListener('click', onPlayButton);
   $('pass-btn').addEventListener('click', onPassButton);
+  // 【実機の要望 2026-10-22】部屋を出る（待合・対戦中・結果）。対戦中は 2 回押しで確定（誤タップ防止）
+  for (const id of ['wait-leave-btn', 'result-leave-btn']) $(id).addEventListener('click', () => leaveRoom());
+  $('game-leave-btn').addEventListener('click', () => {
+    Sound.play('ui');
+    const now = performance.now();
+    if (now - leaveArmedAt < 3000) { leaveRoom(); return; }
+    leaveArmedAt = now;
+    toast('もう一度「出る」を押すと、この部屋を出ます（あなたの席は CPU が続けます）', 3000);
+  });
+}
+let leaveArmedAt = -1e9;
+async function leaveRoom() {
+  Sound.play('ui');
+  const code = gameClient.getCode();
+  try {
+    const st = loadStore();
+    if (code && st[code]) { delete st[code]; localStorage.setItem(STORE, JSON.stringify(st)); }
+    if (localStorage.getItem('daifugo3d.last') === code) localStorage.removeItem('daifugo3d.last');
+  } catch (e) { /* 消せなくてもよい */ }
+  await gameClient.leaveRoom();
+  location.href = '/3d/';   // 3D の状態をまっさらにする（ロビーへ）
 }
 async function onPlayButton() {
   if ($('play-btn').disabled) return;
@@ -1604,6 +1644,7 @@ window.__d3 = {
     if (!c || !camera) return null;
     const v = c.hit.localToWorld(new THREE.Vector3(-D.card.width * 0.28, D.card.height * 0.3, 0));
     v.project(camera);
-    return { x: (v.x + 1) / 2 * window.innerWidth, y: (1 - v.y) / 2 * window.innerHeight, id: c.id };
+    const vw = renderer.domElement.clientWidth, vh = renderer.domElement.clientHeight;
+    return { x: (v.x + 1) / 2 * vw + (viewportSize().left || 0), y: (1 - v.y) / 2 * vh + (viewportSize().top || 0), id: c.id };
   }
 };

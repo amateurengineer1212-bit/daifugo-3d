@@ -188,3 +188,14 @@ body { -webkit-tap-highlight-color: transparent; }
 @media (max-width: 380px) {
   #seats.seats-5 .seat-frame { width: 56px; height: 80px; }
 }
+/* 【実機の要望 2026-10-22】部屋を出る（対戦中は右上「出る」、待合・結果は下の sub-btn） */
+#game-leave-btn { position: fixed; right: 126px; top: calc(6px + env(safe-area-inset-top)); z-index: 40; height: 40px; padding: 0 12px; border-radius: 20px; border: 2px solid #f1c40f; background: rgba(90,20,20,0.85); color: #fff; font-size: 13px; font-weight: bold; cursor: pointer; }
+@media (max-width: 700px) {
+  #game-leave-btn { height: 34px; padding: 0 9px; font-size: 12px; right: 112px; top: calc(5px + env(safe-area-inset-top)); }
+  #log { padding-right: 164px; }
+}
+/* 待合・結果の箱が画面より高いときは中でスクロール（小さいスマホで下のボタンが隠れないように） */
+.lobby-box, .wait-box, .result-box { max-height: calc(100% - 16px); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+#wait-leave-btn, #result-leave-btn { margin-top: 10px; }
+/* 画面の高さは見えている範囲（visualViewport）に JS で合わせる。対応前のブラウザ向けに dvh も入れておく */
+#game-screen { height: 100dvh; }

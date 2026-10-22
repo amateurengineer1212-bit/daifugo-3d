@@ -90,7 +90,8 @@ export async function createAndStart(name) {
 async function fetchState() {
     if (!myCode || !myToken) return;
     try {
-        const res = await fetch(`/api/room/${myCode}/state?token=${myToken}`);
+        // 【Claude 2026-10-22】iPhone の Safari が同じ URL の GET を端末の控えから返すことがあるので、毎回ちがう URL＋no-store にする
+        const res = await fetch(`/api/room/${myCode}/state?token=${myToken}&_=${Date.now()}`, { cache: 'no-store' });
         const data = await res.json();
         if (data.ok) {
             state = data.state;
@@ -411,7 +412,18 @@ export async function startGame() {
 export function getLan() { return lanInfo; }
 export function getCode() { return myCode; }
 export function getToken() { return myToken; }
-export function isHost() { return mySeat === 0; }
+export function isHost() { return (state && typeof state.host === 'number') ? state.host === mySeat : mySeat === 0; }   // 退出でホストが引き継がれることがある（state.host）
+/** 【Claude 2026-10-22 実機の要望】退出：席を CPU に戻してもらい、通信を止める */
+export async function leaveRoom() {
+    if (!myCode || !myToken) return { ok: false, reason: 'not in room' };
+    stopPolling();
+    try {
+        const res = await fetch(`/api/room/${myCode}/leave`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: myToken }) });
+        return await res.json();
+    } catch (e) {
+        return { ok: false, reason: String(e) };
+    }
+}
 export function setSelection(indices) {
     selectedCards = [...indices];
 }

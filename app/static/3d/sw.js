@@ -3,7 +3,7 @@
 // - 通信（/api/）は端末に置かない（毎回サーバーへ）
 // - 画面の本体（html・js・css・json）はネット優先（新しい版をすぐ使う）、届かないときだけ端末の控え
 // - 大きい素材（lib・assets・cards・audio・icons）は端末優先（1 度取ればそのまま）
-const VERSION = '2026-10-22-1';
+const VERSION = '2026-10-22-2';
 const CACHE = 'daifugo3d-' + VERSION;
 const PRECACHE = ['/3d/', '/3d/index.html', '/3d/main.js', '/3d/game_client.js', '/3d/rules_ui.js', '/3d/sound.js', '/3d/style.css', '/3d/layout.css', '/3d/design.json', '/3d/manifest.webmanifest'];
 
